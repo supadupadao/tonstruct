@@ -1,0 +1,8 @@
+[package]
+name = "serde_ton"
+version = "0.0.1"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1.0.217" }
+tonlib-core = { version = "0.23.2 " }

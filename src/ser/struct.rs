@@ -1,0 +1,19 @@
+use crate::error::SerdeTonError;
+use crate::CellSerializer;
+use serde::Serialize;
+
+impl serde::ser::SerializeStruct for &mut CellSerializer {
+    type Ok = ();
+    type Error = SerdeTonError;
+
+    fn serialize_field<T>(&mut self, _key: &'static str, value: &T) -> Result<(), Self::Error>
+    where
+        T: ?Sized + Serialize,
+    {
+        value.serialize(&mut **self)
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        Ok(())
+    }
+}
