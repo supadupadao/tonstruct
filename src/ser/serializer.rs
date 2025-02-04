@@ -1,6 +1,7 @@
 use crate::error::SerdeTonError;
 use crate::ser::CellSerializer;
 use serde::Serialize;
+use tonlib_core::cell::CellBuilder;
 
 impl serde::ser::Serializer for &mut CellSerializer {
     type Ok = ();
@@ -88,8 +89,20 @@ impl serde::ser::Serializer for &mut CellSerializer {
         todo!()
     }
 
-    fn serialize_str(self, _v: &str) -> Result<Self::Ok, Self::Error> {
-        todo!()
+    fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
+        self.builder
+            .store_reference(
+                &CellBuilder::new()
+                    .store_u8(8, 0)
+                    .map_err(|err| Self::Error::FieldError(err.to_string()))?
+                    .store_string(v)
+                    .map_err(|err| Self::Error::FieldError(err.to_string()))?
+                    .build()
+                    .map_err(|err| Self::Error::FieldError(err.to_string()))?
+                    .to_arc(),
+            )
+            .map_err(|err| Self::Error::FieldError(err.to_string()))?;
+        Ok(())
     }
 
     fn serialize_bytes(self, _v: &[u8]) -> Result<Self::Ok, Self::Error> {

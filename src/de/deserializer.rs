@@ -2,6 +2,7 @@ use crate::de::CellDeserializer;
 use crate::error::SerdeTonError;
 use serde::de::Visitor;
 use serde::forward_to_deserialize_any;
+use tonlib_core::cell::dict::predefined_readers::val_reader_snake_formatted_string;
 
 impl<'de> serde::de::Deserializer<'de> for &mut CellDeserializer<'de> {
     type Error = SerdeTonError;
@@ -14,7 +15,7 @@ impl<'de> serde::de::Deserializer<'de> for &mut CellDeserializer<'de> {
     }
 
     forward_to_deserialize_any! {
-        i128 u128 f32 f64 char str string
+        i128 u128 f32 f64 char
         bytes byte_buf option unit unit_struct seq tuple
         tuple_struct map enum identifier ignored_any
     }
@@ -140,5 +141,24 @@ impl<'de> serde::de::Deserializer<'de> for &mut CellDeserializer<'de> {
                 .load_u64(64)
                 .map_err(|err| Self::Error::FieldError(err.to_string()))?,
         )
+    }
+
+    fn deserialize_str<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: Visitor<'de>,
+    {
+        let string = val_reader_snake_formatted_string(&mut self.parser)
+            .map_err(|err| Self::Error::FieldError(err.to_string()))?;
+
+        visitor.visit_string(
+            String::from_utf8(string).map_err(|err| Self::Error::FieldError(err.to_string()))?,
+        )
+    }
+
+    fn deserialize_string<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: Visitor<'de>,
+    {
+        self.deserialize_str(visitor)
     }
 }
