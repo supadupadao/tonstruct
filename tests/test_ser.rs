@@ -11,6 +11,7 @@ pub const INT8_VALUE: i8 = 0x12;
 pub const INT16_VALUE: i16 = 0x1234;
 pub const INT32_VALUE: i32 = 0x12345678;
 pub const INT64_VALUE: i64 = 0x1234567890ABCDEF;
+pub static STR_VALUE: &str = "Hello, World!";
 
 #[test]
 fn test_ser_struct() {
@@ -25,6 +26,7 @@ fn test_ser_struct() {
         uint16: u16,
         uint32: u32,
         uint64: u64,
+        string: String,
     }
     let message = Message {
         bool: BOOL_VALUE,
@@ -36,6 +38,7 @@ fn test_ser_struct() {
         uint16: UINT16_VALUE,
         uint32: UINT32_VALUE,
         uint64: UINT64_VALUE,
+        string: STR_VALUE.to_string(),
     };
     let actual = CellSerializer::to_cell(message).unwrap();
 
@@ -57,6 +60,17 @@ fn test_ser_struct() {
         .store_u32(32, UINT32_VALUE)
         .unwrap()
         .store_u64(64, UINT64_VALUE)
+        .unwrap()
+        .store_reference(
+            &CellBuilder::new()
+                .store_u8(8, 0)
+                .unwrap()
+                .store_string(STR_VALUE)
+                .unwrap()
+                .build()
+                .unwrap()
+                .to_arc(),
+        )
         .unwrap()
         .build()
         .unwrap();
@@ -200,6 +214,31 @@ fn test_ser_uint64() {
 
     let expected = CellBuilder::new()
         .store_u64(64, UINT64_VALUE)
+        .unwrap()
+        .build()
+        .unwrap();
+
+    assert_eq!(actual, expected)
+}
+
+#[test]
+fn test_ser_str() {
+    #[derive(Serialize)]
+    struct Message(String);
+    let message = Message(STR_VALUE.to_owned());
+    let actual = CellSerializer::to_cell(message).unwrap();
+
+    let expected = CellBuilder::new()
+        .store_reference(
+            &CellBuilder::new()
+                .store_u8(8, 0)
+                .unwrap()
+                .store_string(STR_VALUE)
+                .unwrap()
+                .build()
+                .unwrap()
+                .to_arc(),
+        )
         .unwrap()
         .build()
         .unwrap();

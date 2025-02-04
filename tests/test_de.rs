@@ -11,6 +11,7 @@ pub const INT8_VALUE: i8 = 0x12;
 pub const INT16_VALUE: i16 = 0x1234;
 pub const INT32_VALUE: i32 = 0x12345678;
 pub const INT64_VALUE: i64 = 0x1234567890ABCDEF;
+pub static STR_VALUE: &str = "Hello, World!";
 
 #[test]
 fn test_de_struct() {
@@ -192,6 +193,32 @@ fn test_de_uint64() {
 
     let cell = CellBuilder::new()
         .store_u64(64, UINT64_VALUE)
+        .unwrap()
+        .build()
+        .unwrap();
+
+    let actual = CellDeserializer::parse::<Message>(&cell).unwrap();
+
+    assert_eq!(actual, expected)
+}
+
+#[test]
+fn test_de_str() {
+    #[derive(Deserialize, PartialEq, Debug)]
+    struct Message(String);
+    let expected = Message(STR_VALUE.to_owned());
+
+    let cell = CellBuilder::new()
+        .store_reference(
+            &CellBuilder::new()
+                .store_u8(8, 0)
+                .unwrap()
+                .store_string(STR_VALUE)
+                .unwrap()
+                .build()
+                .unwrap()
+                .to_arc(),
+        )
         .unwrap()
         .build()
         .unwrap();

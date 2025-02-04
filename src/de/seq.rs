@@ -9,7 +9,6 @@ impl<'de> serde::de::SeqAccess<'de> for &mut CellDeserializer<'de> {
     where
         T: DeserializeSeed<'de>,
     {
-        println!("HERE {:?}", self.parser.remaining_bits());
         seed.deserialize(&mut **self).map(Some)
     }
 }
