@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use serde_ton::types::int::Int;
 use serde_ton::CellDeserializer;
 use tonlib_core::cell::CellBuilder;
 
@@ -219,6 +220,23 @@ fn test_de_str() {
                 .unwrap()
                 .to_arc(),
         )
+        .unwrap()
+        .build()
+        .unwrap();
+
+    let actual = CellDeserializer::parse::<Message>(&cell).unwrap();
+
+    assert_eq!(actual, expected)
+}
+
+#[test]
+fn test_de_int_bit() {
+    #[derive(Deserialize, PartialEq, Debug)]
+    struct Message(Int<4>);
+    let expected = Message(Int::from_usize(0x0F));
+
+    let cell = CellBuilder::new()
+        .store_u8(4, 0x0F)
         .unwrap()
         .build()
         .unwrap();

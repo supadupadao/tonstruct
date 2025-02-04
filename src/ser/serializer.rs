@@ -166,7 +166,7 @@ impl serde::ser::Serializer for &mut CellSerializer {
     }
 
     fn serialize_tuple(self, _len: usize) -> Result<Self::SerializeTuple, Self::Error> {
-        todo!()
+        Ok(self)
     }
 
     fn serialize_tuple_struct(

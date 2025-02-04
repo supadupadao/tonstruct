@@ -1,3 +1,4 @@
+use crate::de::seq::Seq;
 use crate::de::CellDeserializer;
 use crate::error::SerdeTonError;
 use serde::de::Visitor;
@@ -16,7 +17,7 @@ impl<'de> serde::de::Deserializer<'de> for &mut CellDeserializer<'de> {
 
     forward_to_deserialize_any! {
         i128 u128 f32 f64 char
-        bytes byte_buf option unit unit_struct seq tuple
+        bytes byte_buf option unit unit_struct seq
         tuple_struct map enum identifier ignored_any
     }
 
@@ -34,13 +35,16 @@ impl<'de> serde::de::Deserializer<'de> for &mut CellDeserializer<'de> {
     fn deserialize_struct<V>(
         self,
         _name: &'static str,
-        _fields: &'static [&'static str],
+        fields: &'static [&'static str],
         visitor: V,
     ) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
-        visitor.visit_seq(self)
+        visitor.visit_seq(Seq {
+            de: self,
+            len: fields.len(),
+        })
     }
 
     fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -160,5 +164,12 @@ impl<'de> serde::de::Deserializer<'de> for &mut CellDeserializer<'de> {
         V: Visitor<'de>,
     {
         self.deserialize_str(visitor)
+    }
+
+    fn deserialize_tuple<V>(self, len: usize, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: Visitor<'de>,
+    {
+        visitor.visit_seq(Seq { de: self, len })
     }
 }

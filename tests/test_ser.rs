@@ -1,4 +1,5 @@
 use serde::Serialize;
+use serde_ton::types::int::Int;
 use serde_ton::CellSerializer;
 use tonlib_core::cell::CellBuilder;
 
@@ -239,6 +240,22 @@ fn test_ser_str() {
                 .unwrap()
                 .to_arc(),
         )
+        .unwrap()
+        .build()
+        .unwrap();
+
+    assert_eq!(actual, expected)
+}
+
+#[test]
+fn ser_int_bit() {
+    #[derive(Serialize)]
+    struct Message(Int<4>);
+    let message = Message(Int::from_usize(0xFF));
+    let actual = CellSerializer::to_cell(message).unwrap();
+
+    let expected = CellBuilder::new()
+        .store_u8(4, 0x0F)
         .unwrap()
         .build()
         .unwrap();
