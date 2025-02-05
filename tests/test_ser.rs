@@ -1,7 +1,9 @@
 use serde::Serialize;
+use serde_ton::types::address::Address;
 use serde_ton::types::int::Int;
 use serde_ton::CellSerializer;
 use tonlib_core::cell::CellBuilder;
+use tonlib_core::TonAddress;
 
 pub const BOOL_VALUE: bool = true;
 pub const UINT8_VALUE: u8 = 0x12;
@@ -256,6 +258,24 @@ fn ser_int_bit() {
 
     let expected = CellBuilder::new()
         .store_u8(4, 0x0F)
+        .unwrap()
+        .build()
+        .unwrap();
+
+    assert_eq!(actual, expected)
+}
+
+#[test]
+fn ser_int_address() {
+    let addr = TonAddress::null();
+
+    #[derive(Serialize)]
+    struct Message(Address);
+    let message = Message(Address::new(addr.clone()));
+    let actual = CellSerializer::to_cell(message).unwrap();
+
+    let expected = CellBuilder::new()
+        .store_raw_address(&addr)
         .unwrap()
         .build()
         .unwrap();

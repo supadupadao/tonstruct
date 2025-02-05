@@ -105,8 +105,11 @@ impl serde::ser::Serializer for &mut CellSerializer {
         Ok(())
     }
 
-    fn serialize_bytes(self, _v: &[u8]) -> Result<Self::Ok, Self::Error> {
-        todo!()
+    fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
+        self.builder
+            .store_slice(v)
+            .map_err(|err| Self::Error::FieldError(err.to_string()))?;
+        Ok(())
     }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {

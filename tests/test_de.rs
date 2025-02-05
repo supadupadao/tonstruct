@@ -1,7 +1,9 @@
 use serde::Deserialize;
+use serde_ton::types::address::Address;
 use serde_ton::types::int::Int;
 use serde_ton::CellDeserializer;
 use tonlib_core::cell::CellBuilder;
+use tonlib_core::TonAddress;
 
 pub const BOOL_VALUE: bool = true;
 pub const UINT8_VALUE: u8 = 0x12;
@@ -237,6 +239,24 @@ fn test_de_int_bit() {
 
     let cell = CellBuilder::new()
         .store_u8(4, 0x0F)
+        .unwrap()
+        .build()
+        .unwrap();
+
+    let actual = CellDeserializer::parse::<Message>(&cell).unwrap();
+
+    assert_eq!(actual, expected)
+}
+
+#[test]
+fn test_de_address() {
+    let addr = TonAddress::null();
+    #[derive(Deserialize, PartialEq, Debug)]
+    struct Message(Address);
+    let expected = Message(Address::new(addr.clone()));
+
+    let cell = CellBuilder::new()
+        .store_address(&addr)
         .unwrap()
         .build()
         .unwrap();
