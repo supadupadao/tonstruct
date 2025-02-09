@@ -12,9 +12,9 @@ impl From<TonAddress> for Address {
     }
 }
 
-impl Into<TonAddress> for Address {
-    fn into(self) -> TonAddress {
-        self.0
+impl From<Address> for TonAddress {
+    fn from(value: Address) -> Self {
+        value.0
     }
 }
 

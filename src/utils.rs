@@ -6,6 +6,6 @@ pub trait CastErrorToAnyhow<R> {
 
 impl<R> CastErrorToAnyhow<R> for Result<R, TonCellError> {
     fn map_err_to_anyhow(self) -> anyhow::Result<R> {
-        self.map_err(|err| anyhow::Error::msg(err))
+        self.map_err(anyhow::Error::msg)
     }
 }
