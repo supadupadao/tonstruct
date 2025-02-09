@@ -1,8 +1,9 @@
 use num_bigint::{BigInt, BigUint};
 use std::ops::Deref;
 use std::str::FromStr;
-use tonlib_core::cell::BagOfCells;
-use tonstruct::fields::{Coins, Int, Uint};
+use tonlib_core::cell::{BagOfCells, Cell};
+use tonlib_core::TonAddress;
+use tonstruct::fields::{Address, Coins, Int, Uint};
 use tonstruct::FromCell;
 
 #[test]
@@ -15,11 +16,25 @@ fn test_de_jetton_transfer_message() {
         op_code: Uint<32>,
         query_id: Uint<64>,
         amount: Coins,
+        destination: Address,
+        response_destination: Address,
+        custom_payload: Option<Int<0>>,
+        forward_ton_amount: Coins,
     }
     let expected = Message {
         op_code: Uint::from(BigUint::from(JETTON_TRANSFER_OP_CODE)),
         query_id: Uint::from(BigUint::from_str("1729683923099594196").unwrap()),
         amount: Coins::from(BigUint::from_str("140437000000000").unwrap()),
+        destination: Address::from(
+            TonAddress::from_base64_url("UQCjb5hhRggCJMKnfnxDHlvNMGLboRzTYA8XQKvfOmg08wNo")
+                .unwrap(),
+        ),
+        response_destination: Address::from(
+            TonAddress::from_base64_url("UQCjb5hhRggCJMKnfnxDHlvNMGLboRzTYA8XQKvfOmg08wNo")
+                .unwrap(),
+        ),
+        custom_payload: None,
+        forward_ton_amount: Coins::from(BigUint::from_str("1").unwrap()),
     };
 
     let mut boc = BagOfCells::parse_hex(JETTON_BODY).unwrap();
