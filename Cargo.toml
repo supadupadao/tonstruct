@@ -1,8 +1,10 @@
 [package]
-name = "serde_ton"
+name = "tonstruct"
 version = "0.0.1"
 edition = "2021"
 
 [dependencies]
-serde = { version = "1.0.217" }
+anyhow = { version = "1.0.95" }
+num-bigint = { version = "0.4.6" }
 tonlib-core = { version = "0.23.2 " }
+proc_macro = { path = "proc_macro" }

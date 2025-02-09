@@ -1,247 +1,46 @@
-use serde::Deserialize;
-use serde_ton::types::int::Int;
-use serde_ton::CellDeserializer;
-use tonlib_core::cell::CellBuilder;
-
-pub const BOOL_VALUE: bool = true;
-pub const UINT8_VALUE: u8 = 0x12;
-pub const UINT16_VALUE: u16 = 0x1234;
-pub const UINT32_VALUE: u32 = 0x12345678;
-pub const UINT64_VALUE: u64 = 0x1234567890ABCDEF;
-pub const INT8_VALUE: i8 = 0x12;
-pub const INT16_VALUE: i16 = 0x1234;
-pub const INT32_VALUE: i32 = 0x12345678;
-pub const INT64_VALUE: i64 = 0x1234567890ABCDEF;
-pub static STR_VALUE: &str = "Hello, World!";
+use num_bigint::{BigInt, BigUint};
+use std::ops::Deref;
+use std::str::FromStr;
+use tonlib_core::cell::{BagOfCells, Cell};
+use tonlib_core::TonAddress;
+use tonstruct::fields::{Address, Coins, Int, Uint};
+use tonstruct::FromCell;
 
 #[test]
-fn test_de_struct() {
-    #[derive(Deserialize, PartialEq, Debug)]
+fn test_de_jetton_transfer_message() {
+    const JETTON_BODY: &str = "b5ee9c720101020100700001ae0f8a7ea51801125d220e2dd467fba097f920080146df30c28c100449854efcf8863cb79a60c5b74239a6c01e2e8157be74d069e70028dbe6185182008930a9df9f10c796f34c18b6e84734d803c5d02af7ce9a0d3cc203010028000000004a6574746f6e7320756e7374616b6564";
+    const JETTON_TRANSFER_OP_CODE: u32 = 0x0f8a7ea5;
+
+    #[derive(FromCell, Debug, PartialEq)]
     struct Message {
-        bool: bool,
-        int8: i8,
-        int16: i16,
-        int32: i32,
-        int64: i64,
-        uint8: u8,
-        uint16: u16,
-        uint32: u32,
-        uint64: u64,
+        op_code: Uint<32>,
+        query_id: Uint<64>,
+        amount: Coins,
+        destination: Address,
+        response_destination: Address,
+        custom_payload: Option<Int<0>>,
+        forward_ton_amount: Coins,
     }
     let expected = Message {
-        bool: BOOL_VALUE,
-        int8: INT8_VALUE,
-        int16: INT16_VALUE,
-        int32: INT32_VALUE,
-        int64: INT64_VALUE,
-        uint8: UINT8_VALUE,
-        uint16: UINT16_VALUE,
-        uint32: UINT32_VALUE,
-        uint64: UINT64_VALUE,
+        op_code: Uint::from(BigUint::from(JETTON_TRANSFER_OP_CODE)),
+        query_id: Uint::from(BigUint::from_str("1729683923099594196").unwrap()),
+        amount: Coins::from(BigUint::from_str("140437000000000").unwrap()),
+        destination: Address::from(
+            TonAddress::from_base64_url("UQCjb5hhRggCJMKnfnxDHlvNMGLboRzTYA8XQKvfOmg08wNo")
+                .unwrap(),
+        ),
+        response_destination: Address::from(
+            TonAddress::from_base64_url("UQCjb5hhRggCJMKnfnxDHlvNMGLboRzTYA8XQKvfOmg08wNo")
+                .unwrap(),
+        ),
+        custom_payload: None,
+        forward_ton_amount: Coins::from(BigUint::from_str("1").unwrap()),
     };
 
-    let cell = CellBuilder::new()
-        .store_bit(BOOL_VALUE)
-        .unwrap()
-        .store_i8(8, INT8_VALUE)
-        .unwrap()
-        .store_i32(16, INT16_VALUE as i32)
-        .unwrap()
-        .store_i32(32, INT32_VALUE)
-        .unwrap()
-        .store_i64(64, INT64_VALUE)
-        .unwrap()
-        .store_u8(8, UINT8_VALUE)
-        .unwrap()
-        .store_u32(16, UINT16_VALUE as u32)
-        .unwrap()
-        .store_u32(32, UINT32_VALUE)
-        .unwrap()
-        .store_u64(64, UINT64_VALUE)
-        .unwrap()
-        .build()
-        .unwrap();
+    let mut boc = BagOfCells::parse_hex(JETTON_BODY).unwrap();
+    let cell = boc.into_single_root().unwrap().deref().clone();
 
-    let actual = CellDeserializer::parse::<Message>(&cell).unwrap();
-
-    assert_eq!(actual, expected)
-}
-
-#[test]
-fn test_de_int8() {
-    #[derive(Deserialize, PartialEq, Debug)]
-    struct Message(i8);
-    let expected = Message(INT8_VALUE);
-
-    let cell = CellBuilder::new()
-        .store_i8(8, INT8_VALUE)
-        .unwrap()
-        .build()
-        .unwrap();
-
-    let actual = CellDeserializer::parse::<Message>(&cell).unwrap();
-
-    assert_eq!(actual, expected)
-}
-
-#[test]
-fn test_de_int16() {
-    #[derive(Deserialize, PartialEq, Debug)]
-    struct Message(i16);
-    let expected = Message(INT16_VALUE);
-
-    let cell = CellBuilder::new()
-        .store_i32(16, INT16_VALUE as i32)
-        .unwrap()
-        .build()
-        .unwrap();
-
-    let actual = CellDeserializer::parse::<Message>(&cell).unwrap();
-
-    assert_eq!(actual, expected)
-}
-
-#[test]
-fn test_de_int32() {
-    #[derive(Deserialize, PartialEq, Debug)]
-    struct Message(i32);
-    let expected = Message(INT32_VALUE);
-
-    let cell = CellBuilder::new()
-        .store_i32(32, INT32_VALUE)
-        .unwrap()
-        .build()
-        .unwrap();
-
-    let actual = CellDeserializer::parse::<Message>(&cell).unwrap();
-
-    assert_eq!(actual, expected)
-}
-
-#[test]
-fn test_de_int64() {
-    #[derive(Deserialize, PartialEq, Debug)]
-    struct Message(i64);
-    let expected = Message(INT64_VALUE);
-
-    let cell = CellBuilder::new()
-        .store_i64(64, INT64_VALUE)
-        .unwrap()
-        .build()
-        .unwrap();
-
-    let actual = CellDeserializer::parse::<Message>(&cell).unwrap();
-
-    assert_eq!(actual, expected)
-}
-
-#[test]
-fn test_de_uint8() {
-    #[derive(Deserialize, PartialEq, Debug)]
-    struct Message(u8);
-    let expected = Message(UINT8_VALUE);
-
-    let cell = CellBuilder::new()
-        .store_u8(8, UINT8_VALUE)
-        .unwrap()
-        .build()
-        .unwrap();
-
-    let actual = CellDeserializer::parse::<Message>(&cell).unwrap();
-
-    assert_eq!(actual, expected)
-}
-
-#[test]
-fn test_de_uint16() {
-    #[derive(Deserialize, PartialEq, Debug)]
-    struct Message(u16);
-    let expected = Message(UINT16_VALUE);
-
-    let cell = CellBuilder::new()
-        .store_u32(16, UINT16_VALUE as u32)
-        .unwrap()
-        .build()
-        .unwrap();
-
-    let actual = CellDeserializer::parse::<Message>(&cell).unwrap();
-
-    assert_eq!(actual, expected)
-}
-
-#[test]
-fn test_de_uint32() {
-    #[derive(Deserialize, PartialEq, Debug)]
-    struct Message(u32);
-    let expected = Message(UINT32_VALUE);
-
-    let cell = CellBuilder::new()
-        .store_u32(32, UINT32_VALUE)
-        .unwrap()
-        .build()
-        .unwrap();
-
-    let actual = CellDeserializer::parse::<Message>(&cell).unwrap();
-
-    assert_eq!(actual, expected)
-}
-
-#[test]
-fn test_de_uint64() {
-    #[derive(Deserialize, PartialEq, Debug)]
-    struct Message(u64);
-    let expected = Message(UINT64_VALUE);
-
-    let cell = CellBuilder::new()
-        .store_u64(64, UINT64_VALUE)
-        .unwrap()
-        .build()
-        .unwrap();
-
-    let actual = CellDeserializer::parse::<Message>(&cell).unwrap();
-
-    assert_eq!(actual, expected)
-}
-
-#[test]
-fn test_de_str() {
-    #[derive(Deserialize, PartialEq, Debug)]
-    struct Message(String);
-    let expected = Message(STR_VALUE.to_owned());
-
-    let cell = CellBuilder::new()
-        .store_reference(
-            &CellBuilder::new()
-                .store_u8(8, 0)
-                .unwrap()
-                .store_string(STR_VALUE)
-                .unwrap()
-                .build()
-                .unwrap()
-                .to_arc(),
-        )
-        .unwrap()
-        .build()
-        .unwrap();
-
-    let actual = CellDeserializer::parse::<Message>(&cell).unwrap();
-
-    assert_eq!(actual, expected)
-}
-
-#[test]
-fn test_de_int_bit() {
-    #[derive(Deserialize, PartialEq, Debug)]
-    struct Message(Int<4>);
-    let expected = Message(Int::from_usize(0x0F));
-
-    let cell = CellBuilder::new()
-        .store_u8(4, 0x0F)
-        .unwrap()
-        .build()
-        .unwrap();
-
-    let actual = CellDeserializer::parse::<Message>(&cell).unwrap();
+    let actual = <Message as FromCell>::from_cell(cell).unwrap();
 
     assert_eq!(actual, expected)
 }
