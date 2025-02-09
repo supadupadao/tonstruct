@@ -18,7 +18,7 @@ fn test_ser_int() {
     let actual = ToCell::to_cell(&message).unwrap();
 
     let expected = CellBuilder::new()
-        .store_bit(true)
+        .store_bit(false)
         .unwrap()
         .store_uint(31, &BigUint::from(INT_VALUE as u32))
         .unwrap()
@@ -40,7 +40,7 @@ fn test_ser_neg_int() {
     let actual = ToCell::to_cell(&message).unwrap();
 
     let expected = CellBuilder::new()
-        .store_bit(false)
+        .store_bit(true)
         .unwrap()
         .store_uint(31, &BigUint::from(INT_VALUE as u32))
         .unwrap()
