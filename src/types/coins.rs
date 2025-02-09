@@ -12,9 +12,9 @@ impl From<BigUint> for Coins {
     }
 }
 
-impl Into<BigUint> for Coins {
-    fn into(self) -> BigUint {
-        self.0
+impl From<Coins> for BigUint {
+    fn from(coins: Coins) -> Self {
+        coins.0
     }
 }
 

@@ -12,9 +12,9 @@ impl<const SIZE: usize> From<BigUint> for Uint<SIZE> {
     }
 }
 
-impl<const SIZE: usize> Into<BigUint> for Uint<SIZE> {
-    fn into(self) -> BigUint {
-        self.0
+impl<const SIZE: usize> From<Uint<SIZE>> for BigUint {
+    fn from(value: Uint<SIZE>) -> Self {
+        value.0
     }
 }
 
