@@ -1,64 +1,31 @@
-use serde::de::{SeqAccess, Visitor};
-use serde::ser::SerializeTuple;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::fmt::Formatter;
+use crate::from_cell::FromCell;
+use crate::to_cell::ToCell;
+use crate::utils::CastErrorToAnyhow;
+use num_bigint::BigInt;
+use num_bigint::Sign::Plus;
+use std::fmt::{Debug, Formatter};
+use tonlib_core::cell::{CellBuilder, CellParser};
 
-#[derive(PartialEq, Debug)]
-pub struct Int<const BITS: usize>([bool; BITS]);
+#[derive(Debug, PartialEq)]
+pub struct Int<const SIZE: usize>(BigInt);
 
-impl<const BITS: usize> Int<BITS> {
-    pub fn from_usize(value: usize) -> Int<BITS> {
-        let mut value = value;
-
-        let mut result = [false; BITS];
-        for bit in 0..BITS {
-            result[bit] = value & 1 == 1;
-            value = value >> 1;
-        }
-        Self(result)
+impl<const SIZE: usize> From<BigInt> for Int<SIZE> {
+    fn from(value: BigInt) -> Self {
+        Self(value)
     }
 }
 
-impl<const BITS: usize> Serialize for Int<BITS> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut tup = serializer.serialize_tuple(BITS)?;
-        for bit in self.0.iter() {
-            tup.serialize_element(bit)?;
-        }
-        tup.end()
+impl<const SIZE: usize> ToCell for Int<SIZE> {
+    fn store<'a>(&self, builder: &'a mut CellBuilder) -> anyhow::Result<&'a mut CellBuilder> {
+        let (sign, value) = self.0.clone().into_parts();
+        builder.store_bit(sign == Plus)?;
+        builder.store_uint(SIZE - 1, &value)?;
+        Ok(builder)
     }
 }
 
-impl<'de, const BITS: usize> Deserialize<'de> for Int<BITS> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        struct BoolVisitor<const BITS: usize>;
-
-        impl<'de, const BITS: usize> Visitor<'de> for BoolVisitor<BITS> {
-            type Value = Int<BITS>;
-
-            fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
-                formatter.write_str("BitArray")
-            }
-
-            fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
-            where
-                A: SeqAccess<'de>,
-            {
-                let mut result = 0;
-                while let Some(a) = seq.next_element::<bool>()? {
-                    result <<= 1;
-                    result |= a as usize;
-                }
-                Ok(Int::from_usize(result))
-            }
-        }
-
-        deserializer.deserialize_tuple(BITS, BoolVisitor)
+impl<const SIZE: usize> FromCell for Int<SIZE> {
+    fn load(parser: &mut CellParser) -> anyhow::Result<Self> {
+        parser.load_int(SIZE).map(Self).map_err_to_anyhow()
     }
 }
