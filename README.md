@@ -7,15 +7,6 @@
 ❤️ Any contributions are welcome. Feel free to open pull requests, issues, bug reports, feature proposals or anything
 else
 
-## Types
-
-- [X] Int
-- [X] Uint
-- [X] Address
-- [X] Optional fields
-- [ ] Strings
-- [ ] Nested fields (e.g. referenced cells, slices)
-
 ## Example
 
 To parse transaction body you need to derive `FromCell` macro. In example below we parse transaction body from [
