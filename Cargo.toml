@@ -1,5 +1,8 @@
 [package]
 name = "tonstruct"
+description = "TON blockchain types serialization tool for Rust"
+categories = ["parsing", "parser-implementations"]
+license = "MIT"
 version = "0.0.1"
 edition = "2021"
 
@@ -7,4 +10,4 @@ edition = "2021"
 anyhow = { version = "1.0.95" }
 num-bigint = { version = "0.4.6" }
 tonlib-core = { version = "0.23.2 " }
-tonstruct_proc_macro = { path = "proc_macro" }
+tonstruct_proc_macro = { version = "0.0.1" }

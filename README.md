@@ -1,5 +1,8 @@
 # TonStruct
 
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/supadupadao/tonstruct/ci.yml?label=CI)](https://github.com/supadupadao/tonstruct/actions)
+[![GitHub License](https://img.shields.io/github/license/supadupadao/tonstruct)](https://github.com/supadupadao/tonstruct/blob/master/LICENSE)
+[![Crates.io Version](https://img.shields.io/crates/v/tonstruct)](https://crates.io/crates/tonstruct)
 [![Work in progress](https://img.shields.io/badge/WORK%20IN%20PROGRESS-DO%20NOT%20USE%20IN%20PRODUCTION-ff0000)](https://github.com/supadupadao/tonstruct/issues)
 
 ℹ️ The Open Network *de*serialization crate for Rust language.
