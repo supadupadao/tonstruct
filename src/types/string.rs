@@ -31,3 +31,40 @@ impl ToCell for String {
         builder.store_string(self).map_err_to_anyhow()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_from_cell() {
+        let cell = CellBuilder::new()
+            .store_slice("Hello world".as_bytes())
+            .unwrap()
+            .build()
+            .unwrap();
+
+        assert_eq!(String::from_cell(cell).unwrap(), "Hello world".to_string());
+    }
+
+    #[test]
+    fn test_to_cell() {
+        assert_eq!(
+            "Hello world".to_string().to_cell().unwrap(),
+            CellBuilder::new()
+                .store_slice("Hello world".as_bytes())
+                .unwrap()
+                .build()
+                .unwrap(),
+        );
+    }
+
+    #[test]
+    fn test_from_to_cell() {
+        let first_iter = "Hello world".to_string();
+        let cell = first_iter.to_cell().unwrap();
+        let second_iter = String::from_cell(cell).unwrap();
+
+        assert_eq!(first_iter, second_iter);
+    }
+}
