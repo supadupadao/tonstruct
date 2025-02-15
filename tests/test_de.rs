@@ -3,20 +3,22 @@ use std::ops::Deref;
 use std::str::FromStr;
 use tonlib_core::cell::BagOfCells;
 use tonlib_core::TonAddress;
-use tonstruct::fields::{Address, Coins, Int, Uint};
+use tonstruct::fields::{Address, CellRef, Coins, Comment, Int, Uint};
 use tonstruct::FromCell;
+
+const JETTON_TRANSFER_OP_CODE: u32 = 0x0f8a7ea5;
 
 #[test]
 fn test_de_jetton_transfer_message() {
-    // Transaction 8917a2f87f0b9ec52673b868a7ae111c19654f5b58961b1f7034f384dc5bcb83
-    const JETTON_BODY: &str = "b5ee9c720101020100cc0001b20f8a7ea5000ae06dae10e13655ab2662af4800ef3b9902a271b2a01c8938a523cfe24e71847aaeb6a620001ed44a77ac0e709d0036336667ecac6ce139b289530e20cdd788c446a2de30056e218a1b0c6fc478a7480ee6b2810100db2593856180022a16a3164c4d5aa3133f3110ff10496e00ca8ac8abeffc5027e024d33480c3ea04a221e7010036336667ecac6ce139b289530e20cdd788c446a2de30056e218a1b0c6fc478a77001b23bbd527c00fd3d0874026bb7941f8fdd4d599ed8e7a63f426d5723f0388f2e";
-    const JETTON_TRANSFER_OP_CODE: u32 = 0x0f8a7ea5;
+    // Transaction 15554a34e28fe3bb58e2e0deab4a49c4da3d149ce88665cb253701492fbb97b2
+    #[derive(FromCell, Debug, PartialEq)]
+    struct ForwardPayload {
+        is_right: bool,
+        text_comment: CellRef<Comment>,
+    }
 
     #[derive(FromCell, Debug, PartialEq)]
-    struct ForwardPayload {}
-
-    #[derive(FromCell, Debug, PartialEq)]
-    struct Message {
+    struct JettonTransfer {
         op_code: Uint<32>,
         query_id: Uint<64>,
         amount: Coins,
@@ -26,21 +28,49 @@ fn test_de_jetton_transfer_message() {
         forward_ton_amount: Coins,
         forward_payload: ForwardPayload,
     }
-    let expected = Message {
+
+    const JETTON_BODY: &str = "b5ee9c720101020100760001aa0f8a7ea50000000067b0b2db407f819a080146df30c28c100449854efcf8863cb79a60c5b74239a6c01e2e8157be74d069e70028dbe6185182008930a9df9f10c796f34c18b6e84734d803c5d02af7ce9a0d3cc20301003800000000746573742074657374205465737420746573742074657374";
+
+    let expected = JettonTransfer {
         op_code: Uint::from(BigUint::from(JETTON_TRANSFER_OP_CODE)),
-        query_id: Uint::from(BigUint::from_str("3061511443505462").unwrap()),
-        amount: Coins::from(BigUint::from_str("389540096756").unwrap()),
+        query_id: Uint::from(BigUint::from_str("1739633371").unwrap()),
+        amount: Coins::from(BigUint::from_str("133700000").unwrap()),
         destination: Address::from(
-            TonAddress::from_base64_url("EQB3ncyBUTjZUA5EnFKR5_EnOMI9V1tTEAAPaiU71gc4TiUt")
+            TonAddress::from_base64_url("UQCjb5hhRggCJMKnfnxDHlvNMGLboRzTYA8XQKvfOmg08wNo")
                 .unwrap(),
         ),
         response_destination: Address::from(
-            TonAddress::from_base64_url("UQDYzZmfsrGzhObKJUw4gzdeIxEai3jAFbiGKGwxvxHinf4K")
+            TonAddress::from_base64_url("UQCjb5hhRggCJMKnfnxDHlvNMGLboRzTYA8XQKvfOmg08wNo")
                 .unwrap(),
         ),
         custom_payload: None,
-        forward_ton_amount: Coins::from(BigUint::from_str("125000000").unwrap()),
-        forward_payload: ForwardPayload {},
+        forward_ton_amount: Coins::from(BigUint::from_str("1").unwrap()),
+        forward_payload: ForwardPayload {
+            is_right: true,
+            text_comment: CellRef::new("test test Test test test".to_string().into()),
+        },
+    };
+
+    let mut boc = BagOfCells::parse_hex(JETTON_BODY).unwrap();
+    let cell = boc.into_single_root().unwrap().deref().clone();
+
+    let actual = <JettonTransfer as FromCell>::from_cell(cell).unwrap();
+
+    assert_eq!(actual, expected)
+}
+
+#[test]
+fn test_de_text_comment() {
+    const JETTON_BODY: &str =
+        "b5ee9c7201010101001b000032000000004361707463686120636f64653a205a357751395666";
+
+    #[derive(FromCell, Debug, PartialEq)]
+    struct Message {
+        text_comment: Comment,
+    }
+
+    let expected = Message {
+        text_comment: "Captcha code: Z5wQ9Vf".to_string().into(),
     };
 
     let mut boc = BagOfCells::parse_hex(JETTON_BODY).unwrap();
