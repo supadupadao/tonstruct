@@ -1,5 +1,8 @@
 [package]
 name = "tonstruct"
+description = "TON blockchain types serialization tool for Rust"
+categories = ["parsing", "parser-implementations"]
+license = "MIT"
 version = "0.0.1"
 edition = "2021"
 
