@@ -25,3 +25,103 @@ where
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[derive(FromCell, ToCell, Debug, PartialEq, Default)]
+    struct Message {
+        optional_bool: Option<bool>,
+    }
+
+    #[test]
+    fn test_from_cell_some() {
+        let cell = CellBuilder::new()
+            .store_bit(true)
+            .unwrap()
+            .store_bit(true)
+            .unwrap()
+            .build()
+            .unwrap();
+
+        assert_eq!(
+            Message::from_cell(cell).unwrap(),
+            Message {
+                optional_bool: Some(true)
+            }
+        );
+    }
+
+    #[test]
+    fn test_from_cell_none() {
+        let cell = CellBuilder::new()
+            .store_bit(false)
+            .unwrap()
+            .build()
+            .unwrap();
+
+        assert_eq!(
+            Message::from_cell(cell).unwrap(),
+            Message {
+                optional_bool: None
+            }
+        );
+    }
+
+    #[test]
+    fn test_to_cell_some() {
+        assert_eq!(
+            Message {
+                optional_bool: Some(true)
+            }
+            .to_cell()
+            .unwrap(),
+            CellBuilder::new()
+                .store_bit(true)
+                .unwrap()
+                .store_bit(true)
+                .unwrap()
+                .build()
+                .unwrap(),
+        );
+    }
+
+    #[test]
+    fn test_to_cell_none() {
+        assert_eq!(
+            Message {
+                optional_bool: None
+            }
+            .to_cell()
+            .unwrap(),
+            CellBuilder::new()
+                .store_bit(false)
+                .unwrap()
+                .build()
+                .unwrap(),
+        );
+    }
+
+    #[test]
+    fn test_from_to_cell_some() {
+        let first_iter = Message {
+            optional_bool: Some(true),
+        };
+        let cell = first_iter.to_cell().unwrap();
+        let second_iter = Message::from_cell(cell).unwrap();
+
+        assert_eq!(first_iter, second_iter);
+    }
+
+    #[test]
+    fn test_from_to_cell_none() {
+        let first_iter = Message {
+            optional_bool: None,
+        };
+        let cell = first_iter.to_cell().unwrap();
+        let second_iter = Message::from_cell(cell).unwrap();
+
+        assert_eq!(first_iter, second_iter);
+    }
+}
