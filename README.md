@@ -9,15 +9,20 @@ else
 
 ## Example
 
-To parse transaction body you need to derive `FromCell` macro. In example below we parse transaction body from [
-`8917...cb83`](https://tonviewer.com/transaction/8917a2f87f0b9ec52673b868a7ae111c19654f5b58961b1f7034f384dc5bcb83)
-jetton transfer.
+To parse transaction body you need to derive `FromCell` macro.
+In example below we parse transaction body from jetton transfer
 
 ```rust
-use tonstruct::{FromCell, Uint, Coins, Address};
+use tonstruct::{FromCell, fields::{Uint, Coins, Address, Int, CellRef, Comment}};
 
 #[derive(FromCell, Debug, PartialEq)]
-struct Message {
+struct ForwardPayload {
+    is_right: bool,
+    text_comment: CellRef<Comment>,
+}
+
+#[derive(FromCell, Debug, PartialEq)]
+struct JettonTransfer {
     op_code: Uint<32>,
     query_id: Uint<64>,
     amount: Coins,
@@ -25,6 +30,7 @@ struct Message {
     response_destination: Address,
     custom_payload: Option<Int<0>>,
     forward_ton_amount: Coins,
+    forward_payload: ForwardPayload,
 }
 
 fn main() {
@@ -32,5 +38,27 @@ fn main() {
     let cell = ...;
     // Parsed body
     let message = <Message as FromCell>::from_cell(cell).unwrap();
+}
+```
+
+To serialize structure into `Cell` use derived macro `ToCell` and call `to_cell()` method.
+
+```rust
+use tonstruct::ToCell;
+
+#[derive(ToCell)]
+struct JettonTransfer {
+    /// Fields
+}
+
+fn main() {
+    // Message body
+    let message = Message {
+        /// Fields 
+    };
+
+    let cell = message.to_cell().unwrap();
+    /// OR
+    let cell = ToCell::to_cell(&message).unwrap();
 }
 ```
