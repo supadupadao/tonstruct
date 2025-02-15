@@ -3,7 +3,7 @@ use crate::to_cell::ToCell;
 use crate::utils::CastErrorToAnyhow;
 use num_bigint::BigInt;
 use num_bigint::Sign::Minus;
-use std::fmt::Debug;
+use std::fmt::{Debug, Display, Formatter, LowerHex, UpperHex};
 use tonlib_core::cell::{CellBuilder, CellParser};
 
 #[derive(Debug, PartialEq, Default)]
@@ -18,6 +18,24 @@ impl<const SIZE: usize> From<BigInt> for Int<SIZE> {
 impl<const SIZE: usize> From<Int<SIZE>> for BigInt {
     fn from(value: Int<SIZE>) -> Self {
         value.0
+    }
+}
+
+impl<const SIZE: usize> Display for Int<SIZE> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl<const SIZE: usize> LowerHex for Int<SIZE> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "0x{:x}", self.0)
+    }
+}
+
+impl<const SIZE: usize> UpperHex for Int<SIZE> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "0x{:X}", self.0)
     }
 }
 
@@ -102,5 +120,14 @@ mod tests {
         let second_iter = Int::<BITS>::from_cell(cell).unwrap();
 
         assert_eq!(first_iter, second_iter);
+    }
+
+    #[test]
+    fn test_fmt() {
+        let value = Int::<32>::from(BigInt::from(0x1234abcdi32));
+        assert_eq!("Int(305441741)", format!("{:?}", value));
+        assert_eq!("305441741", format!("{}", value));
+        assert_eq!("0x1234abcd", format!("{:x}", value));
+        assert_eq!("0x1234ABCD", format!("{:X}", value));
     }
 }
