@@ -36,3 +36,94 @@ impl<T: FromCell> FromCell for CellRef<T> {
         T::from_cell(reference.build()?).map(Self)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[derive(FromCell, ToCell, Debug, PartialEq, Default)]
+    struct Message {
+        test_field: bool,
+    }
+
+    #[test]
+    fn test_new() {
+        assert_eq!(
+            CellRef::new(Message { test_field: true }),
+            CellRef(Message { test_field: true })
+        );
+    }
+
+    #[test]
+    fn test_into_inner() {
+        assert_eq!(
+            CellRef(Message { test_field: true }).into_inner(),
+            Message { test_field: true }
+        );
+    }
+
+    #[test]
+    fn test_inner() {
+        assert_eq!(
+            CellRef(Message { test_field: true }).inner(),
+            &Message { test_field: true }
+        );
+    }
+
+    #[test]
+    fn test_default() {
+        assert_eq!(
+            CellRef::<Message>::default(),
+            CellRef(Message { test_field: false })
+        );
+    }
+
+    #[test]
+    fn test_from_cell() {
+        let cell = CellBuilder::new()
+            .store_reference(
+                &CellBuilder::new()
+                    .store_bit(true)
+                    .unwrap()
+                    .build()
+                    .unwrap()
+                    .to_arc(),
+            )
+            .unwrap()
+            .build()
+            .unwrap();
+
+        assert_eq!(
+            CellRef::<Message>::from_cell(cell).unwrap(),
+            CellRef(Message { test_field: true })
+        );
+    }
+
+    #[test]
+    fn test_to_cell() {
+        assert_eq!(
+            CellRef(Message { test_field: true }).to_cell().unwrap(),
+            CellBuilder::new()
+                .store_reference(
+                    &CellBuilder::new()
+                        .store_bit(true)
+                        .unwrap()
+                        .build()
+                        .unwrap()
+                        .to_arc(),
+                )
+                .unwrap()
+                .build()
+                .unwrap(),
+        );
+    }
+
+    #[test]
+    fn test_from_to_cell() {
+        let first_iter = CellRef::new(Message { test_field: true });
+        let cell = first_iter.to_cell().unwrap();
+        let second_iter = CellRef::from_cell(cell).unwrap();
+
+        assert_eq!(first_iter, second_iter);
+    }
+}
