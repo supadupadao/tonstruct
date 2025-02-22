@@ -21,6 +21,29 @@ impl<const SIZE: usize> From<Int<SIZE>> for BigInt {
     }
 }
 
+macro_rules! try_into {
+    ($structname: ty) => {
+        impl<const SIZE: usize> TryFrom<Int<SIZE>> for $structname {
+            type Error = anyhow::Error;
+
+            fn try_from(value: Int<SIZE>) -> Result<Self, Self::Error> {
+                value
+                    .0
+                    .try_into()
+                    .map_err(|err| anyhow::Error::msg(format!("Cannot cast Int: {:?}", err)))
+            }
+        }
+    };
+}
+try_into!(u32);
+try_into!(u64);
+try_into!(u128);
+try_into!(usize);
+try_into!(i32);
+try_into!(i64);
+try_into!(i128);
+try_into!(isize);
+
 impl<const SIZE: usize> Display for Int<SIZE> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
@@ -75,6 +98,42 @@ mod tests {
         assert_eq!(
             <Int::<BITS> as Into<BigInt>>::into(Int(BigInt::from(INT_VALUE))),
             BigInt::from(INT_VALUE)
+        );
+    }
+
+    #[test]
+    fn test_try_into() {
+        assert_eq!(
+            <Int<BITS> as TryInto<u32>>::try_into(Int(BigInt::from(INT_VALUE))).unwrap(),
+            INT_VALUE as u32
+        );
+        assert_eq!(
+            <Int<BITS> as TryInto<u64>>::try_into(Int(BigInt::from(INT_VALUE))).unwrap(),
+            INT_VALUE as u64
+        );
+        assert_eq!(
+            <Int<BITS> as TryInto<u128>>::try_into(Int(BigInt::from(INT_VALUE))).unwrap(),
+            INT_VALUE as u128
+        );
+        assert_eq!(
+            <Int<BITS> as TryInto<usize>>::try_into(Int(BigInt::from(INT_VALUE))).unwrap(),
+            INT_VALUE
+        );
+        assert_eq!(
+            <Int<BITS> as TryInto<i32>>::try_into(Int(BigInt::from(INT_VALUE))).unwrap(),
+            INT_VALUE as i32
+        );
+        assert_eq!(
+            <Int<BITS> as TryInto<i64>>::try_into(Int(BigInt::from(INT_VALUE))).unwrap(),
+            INT_VALUE as i64
+        );
+        assert_eq!(
+            <Int<BITS> as TryInto<i128>>::try_into(Int(BigInt::from(INT_VALUE))).unwrap(),
+            INT_VALUE as i128
+        );
+        assert_eq!(
+            <Int<BITS> as TryInto<isize>>::try_into(Int(BigInt::from(INT_VALUE))).unwrap(),
+            INT_VALUE as isize
         );
     }
 

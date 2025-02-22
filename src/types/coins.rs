@@ -18,6 +18,25 @@ impl From<Coins> for BigUint {
     }
 }
 
+macro_rules! try_into {
+    ($structname: ty) => {
+        impl TryFrom<Coins> for $structname {
+            type Error = anyhow::Error;
+
+            fn try_from(value: Coins) -> Result<Self, Self::Error> {
+                value
+                    .0
+                    .try_into()
+                    .map_err(|err| anyhow::Error::msg(format!("Cannot cast Coins: {:?}", err)))
+            }
+        }
+    };
+}
+try_into!(u32);
+try_into!(u64);
+try_into!(u128);
+try_into!(usize);
+
 impl ToCell for Coins {
     fn store<'a>(&self, builder: &'a mut CellBuilder) -> anyhow::Result<&'a mut CellBuilder> {
         builder.store_coins(&self.0).map_err_to_anyhow()
@@ -49,6 +68,26 @@ mod tests {
         assert_eq!(
             <Coins as Into<BigUint>>::into(Coins(BigUint::from(COINS_VALUE))),
             BigUint::from(COINS_VALUE)
+        );
+    }
+
+    #[test]
+    fn test_try_into() {
+        assert_eq!(
+            <Coins as TryInto<u32>>::try_into(Coins(BigUint::from(COINS_VALUE))).unwrap(),
+            COINS_VALUE as u32
+        );
+        assert_eq!(
+            <Coins as TryInto<u64>>::try_into(Coins(BigUint::from(COINS_VALUE))).unwrap(),
+            COINS_VALUE as u64
+        );
+        assert_eq!(
+            <Coins as TryInto<u128>>::try_into(Coins(BigUint::from(COINS_VALUE))).unwrap(),
+            COINS_VALUE as u128
+        );
+        assert_eq!(
+            <Coins as TryInto<usize>>::try_into(Coins(BigUint::from(COINS_VALUE))).unwrap(),
+            COINS_VALUE
         );
     }
 
