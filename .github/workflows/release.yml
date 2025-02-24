@@ -25,7 +25,7 @@ jobs:
       - name: Cargo login
         run: cargo login ${{ secrets.CRATES_IO_TOKEN }}
       - name: Cargo publish
-        run: cargo release ${{ steps.semver.outputs.nextStrict }} --execute
+        run: cargo release ${{ steps.semver.outputs.nextStrict }} --execute --no-confirm
 
       - name: Create Release
         uses: ncipollo/release-action@v1.15.0
