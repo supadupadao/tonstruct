@@ -1,5 +1,6 @@
 pub mod address;
 pub mod bool;
+pub mod cell_raw;
 pub mod cell_ref;
 pub mod coins;
 pub mod comment;
