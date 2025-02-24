@@ -19,7 +19,7 @@ impl From<CellRaw> for Cell {
 
 impl ToCell for CellRaw {
     fn store<'a>(&self, builder: &'a mut CellBuilder) -> anyhow::Result<&'a mut CellBuilder> {
-        builder.store_slice(self.0.data()).map_err_to_anyhow()
+        builder.store_cell_data(&self.0).map_err_to_anyhow()
     }
 }
 
@@ -44,7 +44,7 @@ mod tests {
     fn test_into() {
         let cell = CellBuilder::default().build().unwrap();
 
-        assert_eq!(CellRaw(cell.clone()).into(), cell);
+        assert_eq!(<CellRaw as Into<Cell>>::into(CellRaw(cell.clone())), cell);
     }
 
     #[test]
@@ -56,41 +56,16 @@ mod tests {
 
     #[test]
     fn test_from_cell() {
-        let cell = CellBuilder::new()
-            .store_reference(
-                &CellBuilder::new()
-                    .store_bit(true)
-                    .unwrap()
-                    .build()
-                    .unwrap()
-                    .to_arc(),
-            )
-            .unwrap()
-            .build()
-            .unwrap();
+        let cell = CellBuilder::new().store_bit(true).unwrap().build().unwrap();
 
         assert_eq!(CellRaw::from_cell(cell.clone()).unwrap(), CellRaw(cell));
     }
 
     #[test]
     fn test_to_cell() {
-        let cell = CellBuilder::new().build().unwrap();
+        let cell = CellBuilder::new().store_bit(true).unwrap().build().unwrap();
 
-        assert_eq!(
-            CellRaw(cell).to_cell().unwrap(),
-            CellBuilder::new()
-                .store_reference(
-                    &CellBuilder::new()
-                        .store_bit(true)
-                        .unwrap()
-                        .build()
-                        .unwrap()
-                        .to_arc(),
-                )
-                .unwrap()
-                .build()
-                .unwrap(),
-        );
+        assert_eq!(CellRaw(cell.clone()).to_cell().unwrap(), cell);
     }
 
     #[test]
