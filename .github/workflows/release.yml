@@ -19,8 +19,9 @@ jobs:
           branch: master
           patchAll: true
 
-      - name: Install cargo-release
-        run: cargo install cargo-release
+      - uses: taiki-e/cache-cargo-install-action@v2
+        with:
+          tool: cargo-release
       - name: Cargo login
         run: cargo login ${{ secrets.CRATES_IO_TOKEN }}
       - name: Cargo publish
