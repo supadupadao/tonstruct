@@ -2,8 +2,6 @@ name: Release
 
 on:
   workflow_dispatch:
-  pull_request:
-    branches: [ 'master' ]
 
 jobs:
   deploy:
@@ -20,6 +18,11 @@ jobs:
           token: ${{ github.token }}
           branch: master
           patchAll: true
+
+      - name: Install cargo-release
+        run: cargo install cargo-release
+      - name: Cargo publish
+        run: cargo release ${{ steps.semver.outputs.next }} --execute
 
       - name: Create Release
         uses: ncipollo/release-action@v1.15.0
