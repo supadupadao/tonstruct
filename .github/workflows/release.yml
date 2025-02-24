@@ -21,6 +21,8 @@ jobs:
 
       - name: Install cargo-release
         run: cargo install cargo-release
+      - name: Cargo login
+        run: cargo login ${{ secrets.CRATES_IO_TOKEN }}
       - name: Cargo publish
         run: cargo release ${{ steps.semver.outputs.next }} --execute
 
