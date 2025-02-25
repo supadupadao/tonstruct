@@ -4,7 +4,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  make-release-pr:
+    permissions:
+      id-token: write # Enable OIDC
+      pull-requests: write
+      contents: write
+
     runs-on: ubuntu-latest
 
     steps:
@@ -19,13 +24,14 @@ jobs:
           branch: master
           patchAll: true
 
+      - uses: chainguard-dev/actions/setup-gitsign@main
       - uses: taiki-e/cache-cargo-install-action@v2
         with:
           tool: cargo-release
-      - name: Cargo login
-        run: cargo login ${{ secrets.CRATES_IO_TOKEN }}
-      - name: Cargo publish
-        run: cargo release ${{ steps.semver.outputs.nextStrict }} --execute --no-confirm
+      - uses: cargo-bins/release-pr@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          version: ${{ steps.semver.outputs.nextStrict }}
 
       - name: Create Release
         uses: ncipollo/release-action@v1.15.0
