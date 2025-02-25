@@ -11,58 +11,20 @@
 ❤️ Any contributions are welcome. Feel free to open pull requests, issues, bug reports, feature proposals or anything
 else
 
-## Example
+## Usage
 
-To parse transaction body you need to derive `FromCell` macro.
-In example below we parse transaction body from jetton transfer
+First you need to add `tonstruct` to your project
 
-```rust
-use tonstruct::{FromCell, fields::{Uint, Coins, Address, Int, CellRef, Comment}};
-
-#[derive(FromCell, Debug, PartialEq)]
-struct ForwardPayload {
-    is_right: bool,
-    text_comment: CellRef<Comment>,
-}
-
-#[derive(FromCell, Debug, PartialEq)]
-struct JettonTransfer {
-    op_code: Uint<32>,
-    query_id: Uint<64>,
-    amount: Coins,
-    destination: Address,
-    response_destination: Address,
-    custom_payload: Option<Int<0>>,
-    forward_ton_amount: Coins,
-    forward_payload: ForwardPayload,
-}
-
-fn main() {
-    // Transaction body Cell
-    let cell = ...;
-    // Parsed body
-    let message = <Message as FromCell>::from_cell(cell).unwrap();
-}
+```toml
+tonstruct = { version = "*" }
 ```
 
-To serialize structure into `Cell` use derived macro `ToCell` and call `to_cell()` method.
+Then add `FromCell` or `ToCell` derive macro to structures you want to serialize/deserialize
 
-```rust
-use tonstruct::ToCell;
+More info about how to use this crate in your project you can find in the following documents:
 
-#[derive(ToCell)]
-struct JettonTransfer {
-    /// Fields
-}
-
-fn main() {
-    // Message body
-    let message = Message {
-        /// Fields 
-    };
-
-    let cell = message.to_cell().unwrap();
-    /// OR
-    let cell = ToCell::to_cell(&message).unwrap();
-}
-```
+- [docs.rs](https://docs.rs/tonstruct/latest/tonstruct/)
+- [examples](examples) directory:
+    - [serialization](examples/serialize.rs) example
+    - [deserialization](examples/deserialize.rs) example
+    - [custom structure](examples/custom_type.rs) implementation example
