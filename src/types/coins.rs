@@ -36,6 +36,21 @@ try_into!(u32);
 try_into!(u64);
 try_into!(u128);
 try_into!(usize);
+macro_rules! impl_from {
+    ($structname: ty) => {
+        impl From<$structname> for Coins {
+            fn from(value: $structname) -> Self {
+                Coins(<BigUint as From<$structname>>::from(value))
+            }
+        }
+    };
+}
+impl_from!(u8);
+impl_from!(u16);
+impl_from!(u32);
+impl_from!(u64);
+impl_from!(u128);
+impl_from!(usize);
 
 impl ToCell for Coins {
     fn store<'a>(&self, builder: &'a mut CellBuilder) -> anyhow::Result<&'a mut CellBuilder> {
@@ -89,6 +104,28 @@ mod tests {
             <Coins as TryInto<usize>>::try_into(Coins(BigUint::from(COINS_VALUE))).unwrap(),
             COINS_VALUE
         );
+
+        assert_eq!(
+            Coins::from(COINS_VALUE as u8),
+            Coins(BigUint::from(COINS_VALUE as u8))
+        );
+        assert_eq!(
+            Coins::from(COINS_VALUE as u16),
+            Coins(BigUint::from(COINS_VALUE as u16))
+        );
+        assert_eq!(
+            Coins::from(COINS_VALUE as u32),
+            Coins(BigUint::from(COINS_VALUE as u32))
+        );
+        assert_eq!(
+            Coins::from(COINS_VALUE as u64),
+            Coins(BigUint::from(COINS_VALUE as u64))
+        );
+        assert_eq!(
+            Coins::from(COINS_VALUE as u128),
+            Coins(BigUint::from(COINS_VALUE as u128))
+        );
+        assert_eq!(Coins::from(COINS_VALUE), Coins(BigUint::from(COINS_VALUE)));
     }
 
     #[test]
