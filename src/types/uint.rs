@@ -37,6 +37,21 @@ try_into!(u32);
 try_into!(u64);
 try_into!(u128);
 try_into!(usize);
+macro_rules! impl_from {
+    ($structname: ty) => {
+        impl<const SIZE: usize> From<$structname> for Uint<SIZE> {
+            fn from(value: $structname) -> Self {
+                Uint(<BigUint as From<$structname>>::from(value))
+            }
+        }
+    };
+}
+impl_from!(u8);
+impl_from!(u16);
+impl_from!(u32);
+impl_from!(u64);
+impl_from!(u128);
+impl_from!(usize);
 
 impl<const SIZE: usize> Display for Uint<SIZE> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -108,6 +123,31 @@ mod tests {
         assert_eq!(
             <Uint<BITS> as TryInto<usize>>::try_into(Uint(BigUint::from(INT_VALUE))).unwrap(),
             INT_VALUE
+        );
+
+        assert_eq!(
+            Uint::<BITS>::from(INT_VALUE as u8),
+            Uint::<BITS>(BigUint::from(INT_VALUE as u8))
+        );
+        assert_eq!(
+            Uint::<BITS>::from(INT_VALUE as u16),
+            Uint::<BITS>(BigUint::from(INT_VALUE as u16))
+        );
+        assert_eq!(
+            Uint::<BITS>::from(INT_VALUE as u32),
+            Uint::<BITS>(BigUint::from(INT_VALUE as u32))
+        );
+        assert_eq!(
+            Uint::<BITS>::from(INT_VALUE as u64),
+            Uint::<BITS>(BigUint::from(INT_VALUE as u64))
+        );
+        assert_eq!(
+            Uint::<BITS>::from(INT_VALUE as u128),
+            Uint::<BITS>(BigUint::from(INT_VALUE as u128))
+        );
+        assert_eq!(
+            Uint::<BITS>::from(INT_VALUE),
+            Uint::<BITS>(BigUint::from(INT_VALUE))
         );
     }
 

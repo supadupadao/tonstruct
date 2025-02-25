@@ -43,6 +43,27 @@ try_into!(i32);
 try_into!(i64);
 try_into!(i128);
 try_into!(isize);
+macro_rules! impl_from {
+    ($structname: ty) => {
+        impl<const SIZE: usize> From<$structname> for Int<SIZE> {
+            fn from(value: $structname) -> Self {
+                Int(<BigInt as From<$structname>>::from(value))
+            }
+        }
+    };
+}
+impl_from!(u8);
+impl_from!(u16);
+impl_from!(u32);
+impl_from!(u64);
+impl_from!(u128);
+impl_from!(usize);
+impl_from!(i8);
+impl_from!(i16);
+impl_from!(i32);
+impl_from!(i64);
+impl_from!(i128);
+impl_from!(isize);
 
 impl<const SIZE: usize> Display for Int<SIZE> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -134,6 +155,55 @@ mod tests {
         assert_eq!(
             <Int<BITS> as TryInto<isize>>::try_into(Int(BigInt::from(INT_VALUE))).unwrap(),
             INT_VALUE as isize
+        );
+
+        assert_eq!(
+            Int::<BITS>::from(INT_VALUE as u8),
+            Int::<BITS>(BigInt::from(INT_VALUE as u8))
+        );
+        assert_eq!(
+            Int::<BITS>::from(INT_VALUE as u16),
+            Int::<BITS>(BigInt::from(INT_VALUE as u16))
+        );
+        assert_eq!(
+            Int::<BITS>::from(INT_VALUE as u32),
+            Int::<BITS>(BigInt::from(INT_VALUE as u32))
+        );
+        assert_eq!(
+            Int::<BITS>::from(INT_VALUE as u64),
+            Int::<BITS>(BigInt::from(INT_VALUE as u64))
+        );
+        assert_eq!(
+            Int::<BITS>::from(INT_VALUE as u128),
+            Int::<BITS>(BigInt::from(INT_VALUE as u128))
+        );
+        assert_eq!(
+            Int::<BITS>::from(INT_VALUE),
+            Int::<BITS>(BigInt::from(INT_VALUE))
+        );
+        assert_eq!(
+            Int::<BITS>::from(INT_VALUE as i8),
+            Int::<BITS>(BigInt::from(INT_VALUE as i8))
+        );
+        assert_eq!(
+            Int::<BITS>::from(INT_VALUE as i16),
+            Int::<BITS>(BigInt::from(INT_VALUE as i16))
+        );
+        assert_eq!(
+            Int::<BITS>::from(INT_VALUE as i32),
+            Int::<BITS>(BigInt::from(INT_VALUE as i32))
+        );
+        assert_eq!(
+            Int::<BITS>::from(INT_VALUE as i64),
+            Int::<BITS>(BigInt::from(INT_VALUE as i64))
+        );
+        assert_eq!(
+            Int::<BITS>::from(INT_VALUE as i128),
+            Int::<BITS>(BigInt::from(INT_VALUE as i128))
+        );
+        assert_eq!(
+            Int::<BITS>::from(INT_VALUE as isize),
+            Int::<BITS>(BigInt::from(INT_VALUE as isize))
         );
     }
 

@@ -1,6 +1,5 @@
 //! In this example we will convert Rust structure into TON Cell
 
-use num_bigint::{BigInt, BigUint};
 use tonstruct::fields::{Coins, Int, Uint};
 use tonstruct::ToCell;
 
@@ -17,9 +16,9 @@ fn main() {
     let message = Message {
         field_a: "You can use built-in string".to_string(),
         field_b: true,
-        field_c: Int::from(BigInt::from(6i32)),
-        field_d: Uint::from(BigUint::from(9u32)),
-        field_e: Coins::from(BigUint::from(100500u32)),
+        field_c: Int::from(6i32),
+        field_d: Uint::from(9u32),
+        field_e: Coins::from(100500u32),
     };
 
     let _ = message.to_cell().unwrap();
