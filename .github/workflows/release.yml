@@ -4,7 +4,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  make-release-pr:
+    permissions:
+      id-token: write # Enable OIDC
+      pull-requests: write
+      contents: write
+
     runs-on: ubuntu-latest
 
     steps:
@@ -19,6 +24,11 @@ jobs:
           branch: master
           patchAll: true
 
+      - uses: chainguard-dev/actions/setup-gitsign@main
+      - name: Install cargo-release
+        uses: taiki-e/install-action@v1
+        with:
+          tool: cargo-release
       - uses: cargo-bins/release-pr@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
