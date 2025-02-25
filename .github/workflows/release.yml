@@ -1,45 +1,56 @@
 name: Release
 
+permissions:
+  pull-requests: write
+  contents: write
+
 on:
   workflow_dispatch:
 
 jobs:
-  make-release-pr:
-    permissions:
-      id-token: write # Enable OIDC
-      pull-requests: write
-      contents: write
 
+  # Release unpublished packages.
+  release-plz-release:
+    name: Release-plz release
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
     steps:
-      - name: Checkout Code
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Run release-plz
+        uses: release-plz/action@v0.5
+        with:
+          command: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
 
-      - name: Get Next Version
-        id: semver
-        uses: ietf-tools/semver-action@v1
+  # Create a PR with the new versions and changelog, preparing the next release.
+  release-plz-pr:
+    name: Release-plz PR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    concurrency:
+      group: release-plz-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          token: ${{ github.token }}
-          branch: master
-          patchAll: true
-
-      - uses: chainguard-dev/actions/setup-gitsign@main
-      - uses: taiki-e/cache-cargo-install-action@v2
+          fetch-depth: 0
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Run release-plz
+        uses: release-plz/action@v0.5
         with:
-          tool: cargo-release
-      - uses: cargo-bins/release-pr@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          version: ${{ steps.semver.outputs.nextStrict }}
-
-      - name: Create Release
-        uses: ncipollo/release-action@v1.15.0
-        with:
-          allowUpdates: true
-          draft: false
-          makeLatest: true
-          name: ${{ steps.semver.outputs.next }}
-          tag: ${{ steps.semver.outputs.next }}
-          token: ${{ github.token }}
-          generateReleaseNotes: true
+          command: release-pr
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
