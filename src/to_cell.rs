@@ -1,14 +1,9 @@
-use crate::utils::CastErrorToAnyhow;
+use crate::{common::TonAddress, Result};
 
-pub trait ToCell {
-    fn to_cell(&self) -> anyhow::Result<tonlib_core::cell::Cell> {
-        let mut buf = tonlib_core::cell::CellBuilder::new();
-        self.store(&mut buf)?;
-        buf.build().map_err_to_anyhow()
-    }
+pub trait TonstructBuilder {
+    fn store_address(&mut self, address: TonAddress) -> Result<&mut Self>;
+}
 
-    fn store<'a>(
-        &self,
-        builder: &'a mut tonlib_core::cell::CellBuilder,
-    ) -> anyhow::Result<&'a mut tonlib_core::cell::CellBuilder>;
+pub trait ToCell<T: TonstructBuilder> {
+    fn store<'a>(&self, builder: &'a mut T) -> Result<&'a mut T>;
 }
