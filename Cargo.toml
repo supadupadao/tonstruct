@@ -9,8 +9,10 @@ repository = "https://github.com/supadupadao/tonstruct/"
 documentation = "https://docs.rs/tonstruct/latest/tonstruct/"
 homepage = "https://github.com/supadupadao/tonstruct/"
 
+[features]
+tonlib_core = ["dep:tonlib-core"]
+
 [dependencies]
-anyhow = { version = "1.0.95" }
 num-bigint = { version = "0.4.6" }
-tonlib-core = { version = "0.23.2 " }
-tonstruct_proc_macro = { version = "0.0.1" }
+tonlib-core = { version = "0.23.2 ", optional = true }
+tonstruct_proc_macro = { version = "0.0.1", path = "proc_macro" }
