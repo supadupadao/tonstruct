@@ -16,18 +16,18 @@ pub fn derive_to_cell(input: TokenStream) -> TokenStream {
     let fields = data.fields.iter().map(|f| {
         let name = &f.ident;
         quote! {
-            builder = ToCell::store(&self.#name, builder).map_err(|err| anyhow::Error::msg(err.to_string()))?;
+            ToCell::store(&self.#name, builder)?;
         }
     });
 
     let trait_impl = quote! {
         impl ToCell for #ident {
-            fn store<'a>(
+            fn store(
                 &self,
-                mut builder: &'a mut tonlib_core::cell::CellBuilder,
-            ) -> anyhow::Result<&'a mut tonlib_core::cell::CellBuilder>{
+                builder: &mut impl tonstruct::TonstructBuilder,
+            ) -> tonstruct::Result<()> {
                 #(#fields)*
-                Ok(builder)
+                Ok(())
             }
         }
     };
@@ -55,7 +55,7 @@ pub fn derive_from_cell(input: TokenStream) -> TokenStream {
 
     let trait_impl = quote! {
         impl FromCell for #ident {
-            fn load(parser: &mut tonlib_core::cell::CellParser) -> anyhow::Result<Self> {
+            fn load(parser: &mut impl tonstruct::TonstructParser) -> tonstruct::Result<Self> {
                 Ok(Self {
                     #(#fields)*
                 })
