@@ -1,6 +1,6 @@
 # TonStruct
 
-[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/supadupadao/tonstruct/ci.yml?label=CI)](https://github.com/supadupadao/tonstruct/actions)
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/supadupadao/tonstruct/ci.yml?event=merge_group)](https://github.com/supadupadao/tonstruct/actions)
 [![GitHub License](https://img.shields.io/github/license/supadupadao/tonstruct)](https://github.com/supadupadao/tonstruct/blob/master/LICENSE)
 [![Crates.io Version](https://img.shields.io/crates/v/tonstruct)](https://crates.io/crates/tonstruct)
 [![Codecov](https://img.shields.io/codecov/c/github/supadupadao/tonstruct)](https://app.codecov.io/gh/supadupadao/tonstruct)
